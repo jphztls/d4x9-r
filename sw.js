@@ -1,4 +1,4 @@
-const CACHE = "dsp1-v2";               // alzare a ogni rilascio
+const CACHE = "dsp1-v3";               // alzare a ogni rilascio
 const FILES = ["./", "index.html", "display.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener("activate", e => e.waitUntil(caches.keys()
