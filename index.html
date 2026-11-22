@@ -53,6 +53,8 @@ button, input { font: var(--text); color: inherit; }
 
 .dialwrap { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
 #dial { display: block; touch-action: none; cursor: grab; }
+.selbtn { position: absolute; right: var(--space-3); top: 50%; width: 76px; height: 76px; margin-top: -38px; padding: 0; border: var(--border-hairline) solid var(--line); border-radius: 9999px; background: var(--surface); color: var(--ink); touch-action: none; cursor: pointer; }
+.selbtn.down { background: var(--surface-inverse); color: var(--ink-inverse); }
 #file, #imp { display: none; }
 </style>
 </head>
@@ -61,7 +63,7 @@ button, input { font: var(--text); color: inherit; }
   <div class="top"><span>DSP-1</span><span class="pname" id="pname"></span><span class="pos" id="lpos"></span><button class="theme" id="theme" aria-label="Tema">◐</button></div>
   <div id="view"><canvas id="gl" aria-label="Display simulato"></canvas><div id="cross"></div></div>
   <div class="list"><div id="rows"></div></div>
-  <div class="dialwrap"><canvas id="lens" aria-label="Lente"></canvas><canvas id="dial" aria-label="Ghiera: gira per scorrere, OK per modificare"></canvas></div>
+  <div class="dialwrap"><canvas id="lens" aria-label="Lente"></canvas><canvas id="dial" aria-label="Ghiera: gira per scorrere i parametri"></canvas><button class="selbtn" id="sel">Select</button></div>
 </div>
 <input type="file" id="file" accept="image/*">
 <input type="file" id="imp" accept=".json,application/json">
@@ -336,13 +338,26 @@ function resetParam(d) {
   if (def === undefined) return;
   setParam(d, def); flash("Valore tipico: " + d.l.toLowerCase()); sound("set");
 }
-/* OK: esegue le azioni, apre il testo, entra ed esce dalla modifica del valore */
+/* Tocco breve su Select (o sul centro della ghiera): esegue le azioni, apre il testo, fa avanzare le opzioni */
 function press() {
   const d = curRow(); if (!d) return;
   if (d.a) { action(d.a); return; }
   if (d.text) { const inp = rowsEl.querySelector("input"); if (inp) inp.focus(); return; }
-  EDIT = !EDIT; sound(EDIT ? "set" : "menu"); renderList();
+  if (d.o || d.lib) { nudge(1, 1, true); sound("set"); }
 }
+/* Select tenuto premuto: finché resta giù la ghiera regola il valore invece di scorrere */
+const selB = $("sel"); let selId = null, selT = 0, selUsed = false;
+selB.addEventListener("pointerdown", (e) => {
+  e.preventDefault(); try { selB.setPointerCapture(e.pointerId); } catch (_) {} audio();
+  selId = e.pointerId; selT = performance.now(); selUsed = false; selB.classList.add("down");
+  const d = curRow(); if (d && !d.a && !d.text) { EDIT = true; D.acc = 0; sound("set"); renderList(); }
+});
+function selUp(e) {
+  if (selId !== e.pointerId) return; selId = null; selB.classList.remove("down");
+  if (EDIT) { EDIT = false; D.acc = 0; renderList(); if (selUsed) sound("menu"); }
+  if (!selUsed && performance.now() - selT < 350) press();
+}
+selB.addEventListener("pointerup", selUp); selB.addEventListener("pointercancel", selUp);
 
 /* --- Cambio dei valori --- */
 function setParam(d, v) {
@@ -439,6 +454,7 @@ dial.addEventListener("pointermove", (e) => {
     const mult = big ? (sp > 9 ? 5 : sp > 5 ? 2 : 1) : 1;
     while (Math.abs(D.acc) >= DETENT) {
       const dir = D.acc > 0 ? 1 : -1; D.acc -= dir * DETENT;
+      selUsed = true;
       if (nudge(dir, mult, false)) sound("detent"); else { sound("stop"); D.acc = 0; break; }
     }
   }
@@ -472,7 +488,7 @@ function layout() {
   if (navigator.standalone && screen.height) H = Math.max(screen.width, screen.height);
   const app = $("app"), cs = getComputedStyle(app), top = parseFloat(cs.paddingTop) || 0, bottom = parseFloat(cs.paddingBottom) || 0;
   const avail = H - top - bottom - 30 - 28 * 6 - 8 - 24;           // resta per vista e ghiera
-  D.size = Math.max(130, Math.min(200, Math.floor(avail * 0.46)));
+  D.size = Math.max(130, Math.min(176, Math.floor(avail * 0.46)));
   const vh = Math.max(140, Math.floor(avail - D.size));
   view.style.height = vh + "px";
   app.style.height = H + "px";
