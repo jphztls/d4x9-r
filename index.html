@@ -29,7 +29,7 @@
 html, body { margin: 0; position: fixed; inset: 0; overflow: hidden; overscroll-behavior: none; background: var(--surface); color: var(--ink); font: var(--text); }
 button, input { font: var(--text); color: inherit; }
 
-#app { position: fixed; left: 0; top: 0; width: 100%; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+#app { position: fixed; left: 0; top: 0; bottom: 0; width: 100%; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
 .top { display: flex; align-items: center; gap: var(--space-3); height: 30px; padding: 0 var(--space-3); flex: none; }
 .top .pname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: var(--opacity-muted); }
 .top .theme { width: var(--control-height); height: var(--control-height); padding: 0; background: none; border: 0; cursor: pointer; }
@@ -38,7 +38,7 @@ button, input { font: var(--text); color: inherit; }
 #view canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
 #cross { position: absolute; border: 1px solid #fff; mix-blend-mode: difference; pointer-events: none; }
 
-#lens { position: absolute; left: var(--space-3); bottom: var(--space-3); width: 76px; height: 76px; border: var(--border-hairline) solid var(--line); background: #000; }
+#lens { position: absolute; left: var(--space-3); bottom: var(--space-2); width: 76px; height: 76px; border: var(--border-hairline) solid var(--line); background: #000; }
 .lpos { height: 22px; padding: 0 var(--space-2); text-align: right; opacity: var(--opacity-muted); font-variant-numeric: tabular-nums; }
 
 .list { flex: none; padding: var(--space-2) var(--space-3) 0; }
@@ -51,9 +51,9 @@ button, input { font: var(--text); color: inherit; }
 .row.sel { outline: var(--border-hairline) solid var(--line); outline-offset: -1px; }          /* scelto: contorno */
 .row.sel.edit { background: var(--surface-inverse); color: var(--ink-inverse); }              /* in modifica: pieno */
 
-.dialwrap { position: relative; flex: 1; min-height: 200px; display: flex; align-items: center; justify-content: center; }
+.dialwrap { position: relative; flex: none; display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-3); }
 #dial { display: block; touch-action: none; cursor: grab; }
-.selbtn { position: absolute; left: var(--space-3); top: var(--space-3); width: 76px; height: 76px; padding: 0; border: var(--border-hairline) solid var(--line); border-radius: 9999px; background: var(--surface); color: var(--ink); touch-action: none; cursor: pointer; }
+.selbtn { position: absolute; left: var(--space-3); top: var(--space-2); width: 76px; height: 76px; padding: 0; border: var(--border-hairline) solid var(--line); border-radius: 9999px; background: var(--surface); color: var(--ink); touch-action: none; cursor: pointer; }
 .selbtn.down { background: var(--surface-inverse); color: var(--ink-inverse); }
 #file, #imp { display: none; }
 </style>
@@ -486,20 +486,21 @@ document.documentElement.dataset.theme = S.theme;
 
 /* --- Vista: dimensione reale, lente, panoramica --- */
 const view = $("view"), lens = $("lens"), lctx = lens.getContext("2d"), cross = $("cross");
-function layout() {
-  let H = window.innerHeight;
-  if (navigator.standalone && screen.height) H = Math.max(screen.width, screen.height);
+function layout() {                        // tutto si adatta all'area davvero visibile (Safari o app dalla Home)
   const app = $("app"), cs = getComputedStyle(app), top = parseFloat(cs.paddingTop) || 0, bottom = parseFloat(cs.paddingBottom) || 0;
-  const avail = H - top - bottom - 30 - 28 * 6 - 22 - 8 - 24;           // resta per vista e ghiera
-  D.size = Math.max(130, Math.min(176, Math.floor(avail * 0.46)));
-  const vh = Math.max(140, Math.floor(avail - D.size));
+  const H = app.clientHeight, wrap = document.querySelector(".dialwrap");
+  const avail = H - top - bottom - document.querySelector(".top").offsetHeight - document.querySelector(".list").offsetHeight;
+  D.size = Math.max(150, Math.min(190, Math.floor(avail * 0.42)));
+  wrap.style.height = Math.max(D.size, 160) + 16 + "px";
+  const vh = Math.max(120, Math.floor(avail - Math.max(D.size, 160) - 16));
   view.style.height = vh + "px";
-  app.style.height = H + "px";
   lens.width = Math.round(76 * DPR); lens.height = Math.round(76 * DPR);
   if (!S.lens) S.lens = [view.clientWidth / 2, vh / 2];
   S.lens[0] = Math.min(S.lens[0], view.clientWidth); S.lens[1] = Math.min(S.lens[1], vh);
   drawDial();
 }
+if (window.visualViewport) visualViewport.addEventListener("resize", () => setTimeout(layout, 60));
+window.addEventListener("orientationchange", () => setTimeout(layout, 250));
 window.addEventListener("resize", () => setTimeout(layout, 60));
 const ptrs = new Map(); let lastDown = 0;
 view.addEventListener("pointerdown", (e) => {
