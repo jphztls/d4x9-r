@@ -39,7 +39,7 @@ button, input { font: var(--text); color: inherit; }
 #cross { position: absolute; border: 1px solid #fff; mix-blend-mode: difference; pointer-events: none; }
 
 #lens { position: absolute; left: var(--space-3); bottom: var(--space-3); width: 76px; height: 76px; border: var(--border-hairline) solid var(--line); background: #000; }
-.top .pos { font-variant-numeric: tabular-nums; }
+.lpos { height: 22px; padding: 0 var(--space-2); text-align: right; opacity: var(--opacity-muted); font-variant-numeric: tabular-nums; }
 
 .list { flex: none; padding: var(--space-2) var(--space-3) 0; }
 #rows { height: calc(var(--row) * 6); overflow: hidden; }
@@ -51,19 +51,19 @@ button, input { font: var(--text); color: inherit; }
 .row.sel { outline: var(--border-hairline) solid var(--line); outline-offset: -1px; }          /* scelto: contorno */
 .row.sel.edit { background: var(--surface-inverse); color: var(--ink-inverse); }              /* in modifica: pieno */
 
-.dialwrap { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.dialwrap { position: relative; flex: 1; min-height: 200px; display: flex; align-items: center; justify-content: center; }
 #dial { display: block; touch-action: none; cursor: grab; }
-.selbtn { position: absolute; right: var(--space-3); top: 50%; width: 76px; height: 76px; margin-top: -38px; padding: 0; border: var(--border-hairline) solid var(--line); border-radius: 9999px; background: var(--surface); color: var(--ink); touch-action: none; cursor: pointer; }
+.selbtn { position: absolute; left: var(--space-3); top: var(--space-3); width: 76px; height: 76px; padding: 0; border: var(--border-hairline) solid var(--line); border-radius: 9999px; background: var(--surface); color: var(--ink); touch-action: none; cursor: pointer; }
 .selbtn.down { background: var(--surface-inverse); color: var(--ink-inverse); }
 #file, #imp { display: none; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="top"><span>DSP-1</span><span class="pname" id="pname"></span><span class="pos" id="lpos"></span><button class="theme" id="theme" aria-label="Tema">◐</button></div>
+  <div class="top"><span>DSP-1</span><span class="pname" id="pname"></span><button class="theme" id="theme" aria-label="Tema">◐</button></div>
   <div id="view"><canvas id="gl" aria-label="Display simulato"></canvas><div id="cross"></div></div>
-  <div class="list"><div id="rows"></div></div>
-  <div class="dialwrap"><canvas id="lens" aria-label="Lente"></canvas><canvas id="dial" aria-label="Ghiera: gira per scorrere i parametri"></canvas><button class="selbtn" id="sel">Select</button></div>
+  <div class="list"><div id="rows"></div><div class="lpos" id="lpos"></div></div>
+  <div class="dialwrap"><canvas id="lens" aria-label="Lente"></canvas><canvas id="dial" aria-label="Ghiera: gira per scorrere i parametri"></canvas><button class="selbtn" id="sel" aria-label="Select"></button></div>
 </div>
 <input type="file" id="file" accept="image/*">
 <input type="file" id="imp" accept=".json,application/json">
@@ -411,7 +411,10 @@ function drawDial() {                       // solo due cerchi concentrici: l'in
   const c = dctx, R = px / 2, r0 = R * 0.36, lw = Math.max(1, DPR);
   c.clearRect(0, 0, px, px); c.lineWidth = lw; c.strokeStyle = ink; c.fillStyle = ink;
   c.beginPath(); c.arc(R, R, R - lw / 2, 0, Math.PI * 2); c.stroke();
-  c.beginPath(); c.arc(R, R, r0, 0, Math.PI * 2); if (D.pressed === "c") c.fill(); else c.stroke();
+  for (const k of [0, Math.PI]) {           // due pallini opposti che girano con la ghiera
+    const a = D.rot + k - Math.PI / 2, rr = R * 0.82;
+    c.beginPath(); c.arc(R + Math.cos(a) * rr, R + Math.sin(a) * rr, R * 0.035, 0, Math.PI * 2); c.fill();
+  }
 }
 function dialPos(e) { const b = dial.getBoundingClientRect(); const x = e.clientX - b.left - b.width / 2, y = e.clientY - b.top - b.height / 2; return { x, y, r: Math.hypot(x, y) / (b.width / 2), a: Math.atan2(y, x) }; }
 const quadOf = (a) => { const d = (a + Math.PI / 2 + Math.PI / 4 + Math.PI * 4) % (Math.PI * 2); return Math.floor(d / (Math.PI / 2)); };   // 0 su, 1 destra, 2 giu, 3 sinistra
@@ -487,7 +490,7 @@ function layout() {
   let H = window.innerHeight;
   if (navigator.standalone && screen.height) H = Math.max(screen.width, screen.height);
   const app = $("app"), cs = getComputedStyle(app), top = parseFloat(cs.paddingTop) || 0, bottom = parseFloat(cs.paddingBottom) || 0;
-  const avail = H - top - bottom - 30 - 28 * 6 - 8 - 24;           // resta per vista e ghiera
+  const avail = H - top - bottom - 30 - 28 * 6 - 22 - 8 - 24;           // resta per vista e ghiera
   D.size = Math.max(130, Math.min(176, Math.floor(avail * 0.46)));
   const vh = Math.max(140, Math.floor(avail - D.size));
   view.style.height = vh + "px";
