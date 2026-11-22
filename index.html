@@ -17,77 +17,57 @@
   --surface: #ffffff; --ink: #000000; --on-ink: #ffffff;
   --line: var(--ink); --surface-inverse: var(--ink); --ink-inverse: var(--on-ink);
   --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono: Menlo, "SF Mono", Consolas, "DejaVu Sans Mono", monospace;
-  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
-  --radius-pill: 9999px; --border-hairline: 1px; --control-height: 28px;
-  --opacity-muted: .5; --view: #e6e6e6;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --border-hairline: 1px; --control-height: 28px; --opacity-muted: .5; --view: #e6e6e6;
+  --text: 400 15px/19px var(--font-sans);          /* un'unica dimensione per tutta l'interfaccia */
+  --row: 28px;
   color-scheme: light;
 }
 :root[data-theme="dark"] { --surface: #000000; --ink: #ffffff; --on-ink: #000000; --view: #0b0b0b; color-scheme: dark; }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
-html, body { margin: 0; position: fixed; inset: 0; overflow: hidden; overscroll-behavior: none; background: var(--surface); color: var(--ink); font: 400 16px/22px var(--font-sans); }
-button { font: inherit; color: inherit; }
+html, body { margin: 0; position: fixed; inset: 0; overflow: hidden; overscroll-behavior: none; background: var(--surface); color: var(--ink); font: var(--text); }
+button, input { font: var(--text); color: inherit; }
 
 #app { position: fixed; left: 0; top: 0; width: 100%; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-.top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); height: 32px; padding: 0 var(--space-3); flex: none; }
-.top b { font-weight: 400; }
-.top .pname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: var(--opacity-muted); font: 400 13px/1 var(--font-mono); text-transform: uppercase; }
+.top { display: flex; align-items: center; gap: var(--space-3); height: 30px; padding: 0 var(--space-3); flex: none; }
+.top .pname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: var(--opacity-muted); }
 .top .theme { width: var(--control-height); height: var(--control-height); padding: 0; background: none; border: 0; cursor: pointer; }
 
 #view { position: relative; flex: none; width: 100%; background: var(--view); overflow: hidden; touch-action: none; }
 #view canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
 #cross { position: absolute; border: 1px solid #fff; mix-blend-mode: difference; pointer-events: none; }
 
-.lensrow { display: flex; gap: var(--space-3); height: 104px; padding: var(--space-2) var(--space-3); flex: none; }
-#lens { width: 88px; height: 88px; flex: none; border: var(--border-hairline) solid var(--line); background: #000; image-rendering: pixelated; }
-.info { flex: 1; min-width: 0; font: 400 12px/18px var(--font-mono); text-transform: uppercase; }
+.lensrow { display: flex; gap: var(--space-3); height: 92px; padding: var(--space-2) var(--space-3); flex: none; }
+#lens { width: 76px; height: 76px; flex: none; border: var(--border-hairline) solid var(--line); background: #000; }
+.info { flex: 1; min-width: 0; font-variant-numeric: tabular-nums; }
 .info div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.info .msg { font-style: italic; }
+.info .msg { opacity: var(--opacity-muted); }
 
-.tabs { box-sizing: border-box; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); height: var(--control-height); border-top: var(--border-hairline) solid var(--line); border-bottom: var(--border-hairline) solid var(--line); flex: none; }
-.tabs button { padding: 0; background: none; border: 0; font: 400 10px/1 var(--font-sans); letter-spacing: .02em; cursor: pointer; }
-.tabs button[aria-pressed="true"] { background: var(--surface-inverse); color: var(--ink-inverse); }
-
-#rows { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 0 var(--space-3); touch-action: pan-y; }
-.row { display: grid; grid-template-columns: 11ch minmax(0, 1fr) 10ch; align-items: center; gap: var(--space-2); height: 30px; padding: 0 var(--space-1); border-bottom: var(--border-hairline) solid rgba(128,128,128,.35); font: 400 14px/1 var(--font-sans); cursor: pointer; }
-.row .lb { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row .vl { text-align: right; font: 400 13px/1 var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.row .bar { position: relative; height: 100%; }
-.row .bar::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: currentColor; opacity: .35; }
-.row .bar i { position: absolute; top: 7px; bottom: 7px; width: 3px; margin-left: -1px; background: currentColor; }
-.row .bar u { position: absolute; top: 50%; height: 1px; background: currentColor; text-decoration: none; }
-.row .dots { display: flex; gap: 4px; align-items: center; height: 100%; }
-.row .dots s { width: 5px; height: 5px; border: 1px solid currentColor; border-radius: 50%; opacity: .6; }
-.row .dots s.on { background: currentColor; opacity: 1; }
-.row input { width: 100%; height: 24px; padding: 0 6px; border: var(--border-hairline) solid currentColor; border-radius: 0; background: transparent; color: inherit; font: 400 16px/1 var(--font-mono); -webkit-user-select: text; user-select: text; text-transform: uppercase; }
-.row.text { grid-template-columns: 11ch minmax(0, 1fr); }
-.row.act { grid-template-columns: minmax(0, 1fr) auto; }
-.row.act .lb::before { content: "▸ "; }
+.list { flex: none; padding: 0 var(--space-3); }
+.lhead { display: flex; justify-content: space-between; height: var(--row); align-items: center; padding: 0 var(--space-1); border-top: var(--border-hairline) solid var(--line); border-bottom: var(--border-hairline) solid var(--line); opacity: 1; }
+.lhead span:last-child { opacity: var(--opacity-muted); font-variant-numeric: tabular-nums; }
+#rows { height: calc(var(--row) * 6); overflow: hidden; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); height: var(--row); padding: 0 var(--space-1); border-bottom: var(--border-hairline) solid rgba(128,128,128,.3); cursor: pointer; }
+.row .lb { flex: none; white-space: nowrap; }
+.row .vl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.row input { flex: 1; min-width: 0; height: 22px; padding: 0 6px; border: var(--border-hairline) solid currentColor; border-radius: 0; background: transparent; font-size: 16px; -webkit-user-select: text; user-select: text; text-align: right; }
+.row.act .lb::after { content: " →"; }
 .row.sel { background: var(--surface-inverse); color: var(--ink-inverse); }
-.row.off { opacity: .45; }
+.row.sec { opacity: var(--opacity-muted); }
 
-.ctrl { display: grid; grid-template-columns: 44px 44px minmax(0, 1fr) 44px; gap: var(--space-2); grid-template-rows: minmax(0, 1fr); height: 76px; padding: var(--space-2) var(--space-3); flex: none; }
-.ud { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); min-height: 0; gap: var(--space-2); }
-.key { min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0; background: var(--surface); border: var(--border-hairline) solid var(--line); border-radius: 0; cursor: pointer; font: 400 14px/1 var(--font-sans); touch-action: none; }
-.key.down { background: var(--surface-inverse); color: var(--ink-inverse); }
-#wheel { width: 100%; height: 100%; border: var(--border-hairline) solid var(--line); touch-action: none; cursor: ew-resize; display: block; }
+.dialwrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: var(--space-2) 0; }
+#dial { display: block; touch-action: none; cursor: grab; }
 #file, #imp { display: none; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="top"><b>DSP-1</b><span class="pname" id="pname"></span><button class="theme" id="theme" aria-label="Tema">◐</button></div>
+  <div class="top"><span>DSP-1</span><span class="pname" id="pname"></span><button class="theme" id="theme" aria-label="Tema">◐</button></div>
   <div id="view"><canvas id="gl" aria-label="Display simulato"></canvas><div id="cross"></div></div>
   <div class="lensrow"><canvas id="lens" aria-label="Lente"></canvas><div class="info" id="info"></div></div>
-  <nav class="tabs" id="tabs"></nav>
-  <div id="rows"></div>
-  <div class="ctrl">
-    <div class="ud"><button class="key" id="kUp" aria-label="Parametro precedente">▲</button><button class="key" id="kDn" aria-label="Parametro successivo">▼</button></div>
-    <button class="key" id="kL" aria-label="Diminuisci">◀</button>
-    <canvas id="wheel" aria-label="Rotella"></canvas>
-    <button class="key" id="kR" aria-label="Aumenta">▶</button>
-  </div>
+  <div class="list"><div class="lhead"><span id="lsec"></span><span id="lpos"></span></div><div id="rows"></div></div>
+  <div class="dialwrap"><canvas id="dial" aria-label="Ghiera: gira per regolare, frecce per spostarsi, centro per confermare"></canvas></div>
 </div>
 <input type="file" id="file" accept="image/*">
 <input type="file" id="imp" accept=".json,application/json">
@@ -97,14 +77,14 @@ button { font: inherit; color: inherit; }
 const $ = (id) => document.getElementById(id);
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 ["gesturestart", "gesturechange", "gestureend"].forEach((t) => document.addEventListener(t, (e) => e.preventDefault()));
-document.addEventListener("touchmove", (e) => { if (!e.target.closest("#rows")) e.preventDefault(); }, { passive: false });
+document.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
 document.addEventListener("dblclick", (e) => e.preventDefault());
 
 const DPR = Math.min(window.devicePixelRatio || 1, 3);
 const MINI = DPR === 3 && Math.min(screen.width, screen.height) === 375 && Math.max(screen.width, screen.height) === 812;
 
 /* --- Impostazioni dell'app (non del display) --- */
-const SET_DEF = { page: 0, rows: [0, 0, 0, 0, 0, 0, 0, 0], sound: "1", theme: "dark", zoom: 6, lens: null, scale: MINI ? "mini" : "native", libSel: "" };
+const SET_DEF = { selKey: "type", selIdx: 0, sound: "1", theme: "dark", zoom: 6, lens: null, scale: MINI ? "mini" : "native", libSel: "" };
 const S = Object.assign({}, SET_DEF);
 try { Object.assign(S, JSON.parse(store.get("dsp1-set", "{}"))); } catch (e) {}
 let lib = {}; try { lib = JSON.parse(store.get("dsp1-lib", "{}")) || {}; } catch (e) {}
@@ -118,104 +98,145 @@ const PPI = 476;
 let saveT = 0;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => { store.set("dsp1-cur", JSON.stringify(P)); store.set("dsp1-set", JSON.stringify(S)); }, 250); }
 
-/* --- Parametri, divisi per pagine --- */
+/* --- Parametri: un'unica lista, si vedono 6 righe alla volta --- */
 const E = (pairs) => pairs.map((p) => (Array.isArray(p) ? p : [p, p]));
 const pct = { u: "%" };
-const PAGES = [
-  { t: "TIPO", rows: [
-    { k: "type", l: "TIPO", o: E([["lcd", "LCD COLORE"], ["lcdmono", "LCD MONO"], ["vfd", "VFD"], ["crt", "CRT"], ["led", "LED"], ["oled", "OLED"], ["eink", "E-INK"]]) },
-    { k: "struct", l: "STRUTTURA", o: E([["matrix", "MATRICE"], ["seg", "SEGMENTI"]]) },
-    { k: "light", l: "LUCE", o: E([["emit", "EMISSIVO"], ["trans", "RETROILL."], ["refl", "RIFLESSIVO"]]) },
-    { k: "color", l: "COLORE", o: E([["rgb", "RGB"], ["mono", "MONO"]]) },
-    { k: "scale", s: 1, l: "SCHERMO", o: E([["mini", "12 MINI"], ["native", "NATIVO"]]) },
+const OFFON = E([[0, "Off"], [1, "On"]]);
+const SECTIONS = [
+  { t: "Tipo", rows: [
+    { k: "type", l: "Tipo", o: E([["lcd", "LCD colore"], ["lcdmono", "LCD mono"], ["vfd", "VFD"], ["crt", "CRT"], ["led", "LED a matrice"], ["oled", "OLED"], ["eink", "E-ink"]]) },
+    { a: "reset", l: "Ripristina preset del tipo" },
+    { k: "struct", l: "Struttura", o: E([["matrix", "Matrice"], ["seg", "Segmenti"]]) },
+    { k: "light", l: "Luce", o: E([["emit", "Emissivo"], ["trans", "Retroilluminato"], ["refl", "Riflessivo"]]) },
+    { k: "color", l: "Colore", o: E([["rgb", "RGB"], ["mono", "Mono"]]) },
   ] },
-  { t: "PIXEL", rows: [
-    { k: "nx", l: "COLONNE", min: 4, max: 400, st: 1 },
-    { k: "ny", l: "RIGHE", min: 4, max: 320, st: 1 },
-    { k: "pitch", l: "PASSO", min: 1, max: 40, st: 1, u: " PX" },
-    { k: "layout", l: "SUBPIXEL", o: E([["none", "NESSUNO"], ["stripe", "STRISCE"], ["delta", "DELTA"], ["pentile", "PENTILE"]]) },
-    { k: "fillX", l: "RIEMP. X", min: 5, max: 100, st: 1, ...pct },
-    { k: "fillY", l: "RIEMP. Y", min: 5, max: 100, st: 1, ...pct },
-    { k: "round", l: "ARROTOND.", min: 0, max: 100, st: 1, ...pct },
-    { k: "bits", l: "LIVELLI", min: 1, max: 8, st: 1, f: (v) => String(Math.pow(2, v)) },
-    { k: "dither", l: "DITHERING", o: E([[0, "OFF"], [1, "BAYER"]]) },
+  { t: "Pixel", rows: [
+    { k: "nx", l: "Colonne", min: 4, max: 400, st: 1 },
+    { k: "ny", l: "Righe", min: 4, max: 320, st: 1 },
+    { k: "pitch", l: "Passo", min: 1, max: 40, st: 1, u: " px" },
+    { k: "layout", l: "Subpixel", o: E([["none", "Nessuno"], ["stripe", "Strisce"], ["delta", "Delta"], ["pentile", "PenTile"]]) },
+    { k: "fillX", l: "Riempimento X", min: 5, max: 100, st: 1, ...pct },
+    { k: "fillY", l: "Riempimento Y", min: 5, max: 100, st: 1, ...pct },
+    { k: "round", l: "Arrotondamento", min: 0, max: 100, st: 1, ...pct },
+    { k: "bits", l: "Livelli", min: 1, max: 8, st: 1, f: (v) => String(Math.pow(2, v)) },
+    { k: "dither", l: "Dithering", o: E([[0, "Off"], [1, "Bayer"]]) },
   ] },
-  { t: "COLORE", rows: [
-    { k: "tintH", l: "ACCESO H", min: 0, max: 359, st: 1, u: "°", wrap: 1 },
-    { k: "tintS", l: "ACCESO S", min: 0, max: 100, st: 1, ...pct },
-    { k: "tintL", l: "ACCESO L", min: 0, max: 100, st: 1, ...pct },
-    { k: "bgH", l: "FONDO H", min: 0, max: 359, st: 1, u: "°", wrap: 1 },
-    { k: "bgS", l: "FONDO S", min: 0, max: 100, st: 1, ...pct },
-    { k: "bgL", l: "FONDO L", min: 0, max: 100, st: 1, ...pct },
-    { k: "bright", l: "LUMINOSITA", min: 0, max: 200, st: 1, ...pct },
-    { k: "contrast", l: "CONTRASTO", min: 0, max: 200, st: 1, ...pct },
-    { k: "black", l: "NERO", min: 0, max: 50, st: 1, ...pct },
-    { k: "gamma", l: "GAMMA", min: 40, max: 250, st: 1, f: (v) => (v / 100).toFixed(2) },
-    { k: "sat", l: "SATURAZ.", min: 0, max: 200, st: 1, ...pct },
-    { k: "unlit", l: "SPENTI", min: 0, max: 50, st: 1, ...pct },
+  { t: "Segmenti", rows: [
+    { k: "segN", l: "Cifre", min: 1, max: 12, st: 1 },
+    { k: "segK", l: "Segmenti per cifra", o: E([[7, "7"], [14, "14"]]) },
+    { k: "segH", l: "Altezza cifra", min: 20, max: 800, st: 2, u: " px" },
+    { k: "segT", l: "Spessore", min: 4, max: 30, st: 1, ...pct },
+    { k: "segSlant", l: "Inclinazione", min: 0, max: 30, st: 1, ...pct },
+    { k: "segGap", l: "Fessura", min: 0, max: 100, st: 1, ...pct },
+    { k: "segSpace", l: "Spaziatura", min: 4, max: 80, st: 1, ...pct },
+    { k: "icons", l: "Icone", o: E([["none", "Nessuna"], ["some", "Alcune accese"], ["all", "Tutte accese"]]) },
+    { k: "colon", l: "Due punti", o: E([["off", "Off"], ["on", "On"], ["blink", "Lampeggio"]]) },
   ] },
-  { t: "EFFETTI", rows: [
-    { k: "scan", l: "SCANLINE", min: 0, max: 100, st: 1, ...pct },
-    { k: "bloom", l: "ALONE", min: 0, max: 100, st: 1, ...pct },
-    { k: "back", l: "DISUNIF.", min: 0, max: 100, st: 1, ...pct },
-    { k: "curve", l: "CURVATURA", min: 0, max: 100, st: 1, ...pct },
-    { k: "persist", l: "SCIA", min: 0, max: 100, st: 1, ...pct },
-    { k: "flick", l: "FLICKER", min: 0, max: 100, st: 1, ...pct },
-    { k: "noise", l: "RUMORE", min: 0, max: 100, st: 1, ...pct },
-    { k: "view", l: "ANGOLO", min: -100, max: 100, st: 1, ...pct },
-    { k: "shadow", l: "OMBRA", min: 0, max: 100, st: 1, ...pct },
-    { k: "mesh", l: "GRIGLIA VFD", min: 0, max: 100, st: 1, ...pct },
-    { k: "edge", l: "BORDO", min: 0, max: 100, st: 1, ...pct },
+  { t: "Colore", rows: [
+    { k: "tintH", l: "Acceso: tinta", min: 0, max: 359, st: 1, u: "°", wrap: 1 },
+    { k: "tintS", l: "Acceso: saturazione", min: 0, max: 100, st: 1, ...pct },
+    { k: "tintL", l: "Acceso: luminosità", min: 0, max: 100, st: 1, ...pct },
+    { k: "bgH", l: "Fondo: tinta", min: 0, max: 359, st: 1, u: "°", wrap: 1 },
+    { k: "bgS", l: "Fondo: saturazione", min: 0, max: 100, st: 1, ...pct },
+    { k: "bgL", l: "Fondo: luminosità", min: 0, max: 100, st: 1, ...pct },
+    { k: "bright", l: "Luminosità", min: 0, max: 200, st: 1, ...pct },
+    { k: "contrast", l: "Contrasto", min: 0, max: 200, st: 1, ...pct },
+    { k: "black", l: "Livello del nero", min: 0, max: 50, st: 1, ...pct },
+    { k: "gamma", l: "Gamma", min: 40, max: 250, st: 1, f: (v) => (v / 100).toFixed(2) },
+    { k: "sat", l: "Saturazione", min: 0, max: 200, st: 1, ...pct },
+    { k: "unlit", l: "Punti spenti visibili", min: 0, max: 50, st: 1, ...pct },
   ] },
-  { t: "VETRO", rows: [
-    { k: "glare", l: "GLARE", min: 0, max: 100, st: 1, ...pct },
-    { k: "glareA", l: "GLARE ANG.", min: -90, max: 90, st: 1, u: "°" },
-    { k: "glareW", l: "GLARE LARG.", min: 5, max: 100, st: 1, ...pct },
-    { k: "ghost", l: "DOPPIA IMM.", min: 0, max: 100, st: 1, ...pct },
-    { k: "ghostD", l: "DISTANZA", min: 0, max: 60, st: 1, u: " PX" },
-    { k: "ghostA", l: "DIREZIONE", min: 0, max: 359, st: 1, u: "°", wrap: 1 },
-    { k: "frameW", l: "CORNICE", min: 0, max: 120, st: 1, u: " PX" },
-    { k: "frameL", l: "CORNICE L", min: 0, max: 100, st: 1, ...pct },
+  { t: "Effetti", rows: [
+    { k: "scan", l: "Scanline", min: 0, max: 100, st: 1, ...pct },
+    { k: "bloom", l: "Alone", min: 0, max: 100, st: 1, ...pct },
+    { k: "back", l: "Luce non uniforme", min: 0, max: 100, st: 1, ...pct },
+    { k: "curve", l: "Curvatura", min: 0, max: 100, st: 1, ...pct },
+    { k: "persist", l: "Scia", min: 0, max: 100, st: 1, ...pct },
+    { k: "flick", l: "Flicker", min: 0, max: 100, st: 1, ...pct },
+    { k: "noise", l: "Rumore", min: 0, max: 100, st: 1, ...pct },
+    { k: "view", l: "Angolo di visione", min: -100, max: 100, st: 1, ...pct },
+    { k: "shadow", l: "Ombra dei punti", min: 0, max: 100, st: 1, ...pct },
+    { k: "mesh", l: "Griglia VFD", min: 0, max: 100, st: 1, ...pct },
+    { k: "edge", l: "Bordo in ombra", min: 0, max: 100, st: 1, ...pct },
   ] },
-  { t: "FONTE", rows: [
-    { k: "src", l: "SORGENTE", o: E([["pattern", "PATTERN"], ["image", "IMMAGINE"], ["camera", "CAMERA"], ["blank", "VUOTO"]]) },
-    { k: "pattern", l: "PATTERN", o: E([["bars", "BARRE"], ["ramp", "RAMPA"], ["grid", "GRIGLIA"], ["scene", "SCENA"]]) },
-    { a: "image", l: "CARICA IMMAGINE" },
-    { k: "fit", l: "ADATTA", o: E([["cover", "RIEMPI"], ["contain", "CONTIENI"]]) },
-    { k: "text", l: "TESTO", text: 1 },
-    { k: "font", l: "CARATTERE", o: E([["5x7", "5×7"], ["sys", "SISTEMA"]]) },
-    { k: "tscale", l: "SCALA", min: 1, max: 8, st: 1, u: "×" },
-    { k: "tpos", l: "POSIZIONE", o: E([["top", "ALTO"], ["center", "CENTRO"], ["bottom", "BASSO"]]) },
-    { k: "tscroll", l: "SCORRIM.", min: -20, max: 20, st: 1 },
-    { k: "tout", l: "CONTORNO", o: E([[0, "OFF"], [1, "ON"]]) },
-    { k: "invert", l: "INVERTI", o: E([[0, "OFF"], [1, "ON"]]) },
+  { t: "Vetro", rows: [
+    { k: "glare", l: "Glare", min: 0, max: 100, st: 1, ...pct },
+    { k: "glareA", l: "Glare: angolo", min: -90, max: 90, st: 1, u: "°" },
+    { k: "glareW", l: "Glare: larghezza", min: 5, max: 100, st: 1, ...pct },
+    { k: "ghost", l: "Doppia immagine", min: 0, max: 100, st: 1, ...pct },
+    { k: "ghostD", l: "Doppia: distanza", min: 0, max: 60, st: 1, u: " px" },
+    { k: "ghostA", l: "Doppia: direzione", min: 0, max: 359, st: 1, u: "°", wrap: 1 },
+    { k: "frost", l: "Satinatura", min: 0, max: 100, st: 1, ...pct },
+    { k: "frostR", l: "Satinatura: raggio", min: 1, max: 30, st: 1, u: " px" },
+    { k: "gTintA", l: "Tinta del vetro", min: 0, max: 100, st: 1, ...pct },
+    { k: "haze", l: "Velatura", min: 0, max: 100, st: 1, ...pct },
+    { k: "gTintH", l: "Vetro: tinta", min: 0, max: 359, st: 1, u: "°", wrap: 1 },
+    { k: "gTintS", l: "Vetro: saturazione", min: 0, max: 100, st: 1, ...pct },
+    { k: "frameW", l: "Cornice", min: 0, max: 120, st: 1, u: " px" },
+    { k: "frameL", l: "Cornice: luminosità", min: 0, max: 100, st: 1, ...pct },
   ] },
-  { t: "SEGM.", rows: [
-    { k: "segN", l: "CIFRE", min: 1, max: 12, st: 1 },
-    { k: "segK", l: "SEGMENTI", o: E([[7, "7"], [14, "14"]]) },
-    { k: "segH", l: "ALTEZZA", min: 20, max: 800, st: 2, u: " PX" },
-    { k: "segT", l: "SPESSORE", min: 4, max: 30, st: 1, ...pct },
-    { k: "segSlant", l: "INCLINAZ.", min: 0, max: 30, st: 1, ...pct },
-    { k: "segGap", l: "FESSURA", min: 0, max: 100, st: 1, ...pct },
-    { k: "segSpace", l: "SPAZIATURA", min: 4, max: 80, st: 1, ...pct },
-    { k: "icons", l: "ICONE", o: E([["none", "NESSUNA"], ["some", "ALCUNE"], ["all", "TUTTE"]]) },
-    { k: "colon", l: "DUE PUNTI", o: E([["off", "OFF"], ["on", "ON"], ["blink", "LAMPEGGIO"]]) },
+  { t: "Contenuto", rows: [
+    { k: "src", l: "Sorgente", o: E([["pattern", "Pattern"], ["image", "Immagine"], ["camera", "Camera"], ["blank", "Vuoto"]]) },
+    { k: "pattern", l: "Pattern", o: E([["bars", "Barre"], ["ramp", "Rampe"], ["grid", "Griglia"], ["scene", "Scena"]]) },
+    { a: "image", l: "Carica immagine" },
+    { k: "fit", l: "Adatta", o: E([["cover", "Riempi"], ["contain", "Contieni"]]) },
+    { k: "text", l: "Testo", text: 1 },
+    { k: "font", l: "Carattere", o: E([["5x7", "Bitmap 5×7"], ["sys", "Sistema"]]) },
+    { k: "tscale", l: "Scala testo", min: 1, max: 8, st: 1, u: "×" },
+    { k: "tpos", l: "Posizione testo", o: E([["top", "Alto"], ["center", "Centro"], ["bottom", "Basso"]]) },
+    { k: "tscroll", l: "Scorrimento", min: -20, max: 20, st: 1 },
+    { k: "tout", l: "Contorno testo", o: OFFON },
+    { k: "invert", l: "Inverti", o: OFFON },
   ] },
-  { t: "PRESET", rows: [
-    { k: "name", l: "NOME", text: 1 },
-    { a: "save", l: "SALVA NEL CATALOGO" },
-    { k: "libSel", s: 1, l: "CATALOGO", lib: 1 },
-    { a: "load", l: "CARICA DAL CATALOGO" },
-    { a: "del", l: "ELIMINA DAL CATALOGO" },
-    { a: "expJson", l: "ESPORTA PRESET (JSON)" },
-    { a: "expMod", l: "ESPORTA MODULO (JS + JSON)" },
-    { a: "imp", l: "IMPORTA PRESET" },
-    { a: "shot", l: "SCREENSHOT" },
-    { k: "sound", s: 1, l: "SUONI", o: E([["1", "ON"], ["0", "OFF"]]) },
-    { k: "theme", s: 1, l: "TEMA", o: E([["dark", "SCURO"], ["light", "CHIARO"]]) },
+  { t: "Preset", rows: [
+    { k: "name", l: "Nome", text: 1 },
+    { a: "save", l: "Salva nel catalogo" },
+    { k: "libSel", s: 1, l: "Catalogo", lib: 1 },
+    { a: "load", l: "Carica dal catalogo" },
+    { a: "del", l: "Elimina dal catalogo" },
+    { a: "expJson", l: "Esporta preset (JSON)" },
+    { a: "expMod", l: "Esporta modulo (JS + JSON)" },
+    { a: "imp", l: "Importa preset" },
+    { a: "shot", l: "Screenshot" },
+  ] },
+  { t: "App", rows: [
+    { k: "scale", s: 1, l: "Schermo", o: E([["mini", "iPhone 12 mini"], ["native", "Nativo"]]) },
+    { k: "sound", s: 1, l: "Suoni", o: E([["1", "On"], ["0", "Off"]]) },
+    { k: "theme", s: 1, l: "Tema", o: E([["dark", "Scuro"], ["light", "Chiaro"]]) },
   ] },
 ];
-const libOpts = () => { const k = Object.keys(lib); return k.length ? k.map((n) => [n, n]) : [["", "VUOTO"]]; };
+SECTIONS.forEach((s) => s.rows.forEach((r) => { r.sec = s.t; r.id = r.k || r.a; }));
+const ALL = SECTIONS.flatMap((s) => s.rows);
+/* Effetti che hanno senso per ogni tecnologia: gli altri non si vedono */
+const FX = {
+  lcd: ["bloom", "back", "persist", "noise", "view", "edge", "black"],
+  lcdmono: ["back", "persist", "noise", "view", "shadow", "edge", "unlit"],
+  vfd: ["bloom", "back", "persist", "flick", "noise", "mesh", "edge", "unlit"],
+  crt: ["scan", "bloom", "back", "curve", "persist", "flick", "noise", "edge"],
+  led: ["bloom", "flick", "noise", "edge", "unlit"],
+  oled: ["bloom", "noise", "edge"],
+  eink: ["persist", "noise", "back", "edge", "unlit"],
+};
+const EFFECT_KEYS = ["scan", "bloom", "back", "curve", "persist", "flick", "noise", "view", "shadow", "mesh", "edge", "black", "unlit"];
+const MATRIX_KEYS = ["nx", "ny", "pitch", "fillX", "fillY", "round", "bits", "dither", "src", "pattern", "image", "fit", "font", "tscale", "tpos", "tout", "invert", "sat", "gamma", "contrast", "persist"];
+function relevant(d) {
+  const seg = P.struct === "seg", k = d.id;
+  if (MATRIX_KEYS.includes(k) && seg) return false;
+  if (d.sec === "Segmenti") return seg;
+  if (k === "layout") return !seg && P.color === "rgb";
+  if (EFFECT_KEYS.includes(k)) return (FX[P.type] || EFFECT_KEYS).includes(k);
+  if (k === "pattern") return P.src === "pattern";
+  if (k === "image") return P.src === "image";
+  if (k === "fit") return P.src === "image" || P.src === "camera";
+  if (k === "ghostD" || k === "ghostA") return P.ghost > 0;
+  if (k === "glareA" || k === "glareW") return P.glare > 0;
+  if (k === "frostR") return P.frost > 0;
+  if (k === "gTintH" || k === "gTintS") return P.gTintA > 0 || P.haze > 0;
+  if (k === "frameL") return P.frameW > 0;
+  if (k === "load" || k === "del") return Object.keys(lib).length > 0;
+  return true;
+}
+const libOpts = () => { const k = Object.keys(lib); return k.length ? k.map((n) => [n, n]) : [["", "Vuoto"]]; };
 const optsOf = (d) => (d.lib ? libOpts() : d.o);
 const getV = (d) => (d.s ? S[d.k] : P[d.k]);
 function fmt(d, v) {
@@ -260,105 +281,98 @@ function sound(k) {
 }
 ["touchend", "click"].forEach((t) => document.addEventListener(t, () => { if (S.sound === "1") audio(); }, true)); // iOS sblocca l'audio solo dopo un tocco
 
-/* --- Righe --- */
+
+/* --- Lista: 6 righe sempre visibili, nessuno scorrimento --- */
 const rowsEl = $("rows");
-let msg = "", msgT = 0, confirmDel = false;
+let msg = "", msgT = 0, confirmDel = false, visible = [];
 function flash(t) { msg = t; clearTimeout(msgT); msgT = setTimeout(() => { msg = ""; info(); }, 1800); info(); }
-function rowHtml(d) {
-  if (d.a) return `<span class="lb">${d.l}</span><span class="vl"></span>`;
-  if (d.text) return `<span class="lb">${d.l}</span><input type="text" maxlength="64" autocomplete="off" autocorrect="off" spellcheck="false">`;
-  return `<span class="lb">${d.l}</span><span class="${d.o || d.lib ? "dots" : "bar"}"></span><span class="vl"></span>`;
+function selIndex() {
+  let i = visible.findIndex((d) => d.id === S.selKey);
+  if (i < 0) { i = Math.max(0, Math.min(visible.length - 1, S.selIdx)); S.selKey = visible[i].id; }
+  S.selIdx = i; return i;
 }
-function buildRows() {
-  const pg = PAGES[S.page];
+function curRow() { return visible[selIndex()]; }
+function renderList() {
+  visible = ALL.filter(relevant);
+  const i = selIndex(), start = Math.floor(i / 6) * 6, d = visible[i];
+  $("lsec").textContent = d.sec;
+  $("lpos").textContent = `${i + 1}/${visible.length}`;
+  const focused = document.activeElement && document.activeElement.tagName === "INPUT" ? document.activeElement.dataset.k : null;
   rowsEl.innerHTML = "";
-  pg.rows.forEach((d, i) => {
-    const r = document.createElement("div");
-    r.className = "row" + (d.a ? " act" : d.text ? " text" : "");
-    r.innerHTML = rowHtml(d); r.dataset.i = i;
-    if (d.text) {
-      const inp = r.querySelector("input"); inp.value = getV(d) || "";
-      inp.addEventListener("input", () => { P[d.k] = inp.value.toUpperCase(); if (d.k === "text") eng.seg.text = P.text; save(); info(); });
-      inp.addEventListener("focus", () => select(i, true));
+  for (let j = start; j < start + 6; j++) {
+    const r = document.createElement("div"), e = visible[j];
+    if (!e) { r.className = "row"; r.style.borderBottomColor = "transparent"; rowsEl.appendChild(r); continue; }
+    r.className = "row" + (e.a ? " act" : "") + (j === i ? " sel" : "");
+    r.dataset.j = j;
+    if (e.text) {
+      r.innerHTML = `<span class="lb">${e.l}</span><input type="text" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">`;
+      const inp = r.querySelector("input"); inp.value = getV(e) || ""; inp.dataset.k = e.k;
+      inp.addEventListener("input", () => { P[e.k] = inp.value; if (e.k === "text") eng.seg.text = P.text; save(); info(); });
+      inp.addEventListener("focus", () => { if (S.selKey !== e.id) { S.selKey = e.id; S.selIdx = j; markSel(); } });
+      inp.addEventListener("keydown", (ev) => { if (ev.key === "Enter") inp.blur(); });
+    } else {
+      const v = e.a ? (e.a === "del" && confirmDel ? "tocca ancora" : "") : fmt(e, getV(e));
+      r.innerHTML = `<span class="lb">${e.l}</span><span class="vl">${v}</span>`;
     }
     rowsEl.appendChild(r);
-    updRow(i);
-  });
-  [...$("tabs").children].forEach((b, i) => b.setAttribute("aria-pressed", i === S.page ? "true" : "false"));
-  select(S.rows[S.page] || 0, true);
-}
-function updRow(i) {
-  const d = PAGES[S.page].rows[i], r = rowsEl.children[i]; if (!r || d.text) return;
-  if (d.a) { r.querySelector(".vl").textContent = d.a === "del" && confirmDel ? "TOCCA ANCORA" : ""; return; }
-  const v = getV(d);
-  r.querySelector(".vl").textContent = fmt(d, v);
-  if (d.o || d.lib) {
-    const o = optsOf(d), idx = o.findIndex((x) => String(x[0]) === String(v));
-    r.querySelector(".dots").innerHTML = o.length <= 8 ? o.map((_, j) => `<s class="${j === idx ? "on" : ""}"></s>`).join("") : `<s class="on"></s> ${idx + 1}/${o.length}`;
-  } else {
-    const x = (v - d.min) / (d.max - d.min) * 100, z = d.min < 0 ? -d.min / (d.max - d.min) * 100 : 0;
-    r.querySelector(".bar").innerHTML = `<u style="left:${Math.min(x, z)}%;width:${Math.abs(x - z)}%;height:3px;margin-top:-1px"></u><i style="left:${x}%"></i>`;
+    if (focused && e.k === focused) r.querySelector("input").focus();
   }
-  const relevant = relevance(d);
-  r.classList.toggle("off", !relevant);
 }
-function relevance(d) {
-  const seg = P.struct === "seg";
-  if (["nx", "ny", "fillX", "fillY", "round", "bits", "dither", "persist", "src", "pattern", "fit", "font", "tscale", "tpos", "tout", "invert", "sat", "gamma", "contrast"].includes(d.k)) return !seg;
-  if (d.k && d.k.startsWith("seg") || d.k === "icons" || d.k === "colon") return seg;
-  if (d.k === "layout") return !seg && P.color === "rgb";
-  if (d.k === "black") return P.light === "trans";
-  if (d.k === "shadow") return P.light === "refl";
-  if (d.k === "mesh") return P.light === "emit";
-  return true;
-}
-function select(i, quiet) {
-  const n = PAGES[S.page].rows.length; i = Math.max(0, Math.min(n - 1, i));
-  S.rows[S.page] = i; save();
-  [...rowsEl.children].forEach((r, j) => r.classList.toggle("sel", j === i));
-  const r = rowsEl.children[i]; if (r) { const a = r.offsetTop, b = a + r.offsetHeight; if (a < rowsEl.scrollTop) rowsEl.scrollTop = a; else if (b > rowsEl.scrollTop + rowsEl.clientHeight) rowsEl.scrollTop = b - rowsEl.clientHeight; }
-  if (!quiet) sound("menu");
-}
+function markSel() { const i = selIndex(); [...rowsEl.children].forEach((r) => r.classList.toggle("sel", +r.dataset.j === i)); $("lsec").textContent = visible[i].sec; $("lpos").textContent = `${i + 1}/${visible.length}`; }
 function moveSel(dir) {
-  const n = PAGES[S.page].rows.length, i = S.rows[S.page] + dir;
-  if (i < 0 || i >= n) { S.page = (S.page + dir + PAGES.length) % PAGES.length; S.rows[S.page] = dir > 0 ? 0 : PAGES[S.page].rows.length - 1; buildRows(); sound("menu"); return; }
-  select(i);
+  const n = visible.length; let i = selIndex() + dir;
+  i = (i + n) % n;
+  S.selKey = visible[i].id; S.selIdx = i; save();
+  if (document.activeElement && document.activeElement.tagName === "INPUT") document.activeElement.blur();
+  renderList(); return true;
 }
-function curRow() { return PAGES[S.page].rows[S.rows[S.page]]; }
-let lastTap = { i: -1, t: 0 };
-rowsEl.addEventListener("click", (e) => {
-  const r = e.target.closest(".row"); if (!r || e.target.tagName === "INPUT") return;
-  const i = +r.dataset.i, d = PAGES[S.page].rows[i], now = performance.now();
-  if (d.a) { select(i, true); action(d.a); return; }
-  if (lastTap.i === i && now - lastTap.t < 350 && !d.lib && !d.s) { resetParam(d); lastTap.i = -1; return; }   // doppio tocco: valore tipico
-  lastTap = { i, t: now };
-  if (S.rows[S.page] !== i) select(i);
-  else if (d.o || d.lib) nudge(1, 1, true);    // un tocco sulla riga gia scelta fa avanzare l'opzione
+let lastTap = { j: -1, t: 0 };
+rowsEl.addEventListener("click", (ev) => {
+  const r = ev.target.closest(".row"); if (!r || r.dataset.j == null || ev.target.tagName === "INPUT") return;
+  const j = +r.dataset.j, d = visible[j], now = performance.now();
+  if (S.selKey !== d.id) { S.selKey = d.id; S.selIdx = j; save(); markSel(); sound("menu"); lastTap = { j, t: now }; return; }
+  if (lastTap.j === j && now - lastTap.t < 350 && !d.a) { resetParam(d); lastTap.j = -1; return; }
+  lastTap = { j, t: now };
+  press();
 });
 function resetParam(d) {
+  if (d.s || d.a || d.lib) return;
   const def = (DSP.TYPES[P.type] || {})[d.k] ?? DSP.DEFAULTS[d.k];
   if (def === undefined) return;
-  setParam(d, def); flash("VALORE TIPICO"); sound("set");
+  setParam(d, def); flash("Valore tipico: " + d.l.toLowerCase()); sound("set");
+}
+/* Il tasto centrale: esegue le azioni, fa avanzare le opzioni, apre il testo */
+function press() {
+  const d = curRow(); if (!d) return;
+  if (d.a) { action(d.a); return; }
+  if (d.text) { const inp = rowsEl.querySelector("input"); if (inp) inp.focus(); return; }
+  if (d.o || d.lib) { nudge(1, 1, true); sound("set"); return; }
+  sound("stop");
 }
 
 /* --- Cambio dei valori --- */
 function setParam(d, v) {
+  const before = visible.length;
   if (d.s) {
     S[d.k] = v;
-    if (d.k === "theme") document.documentElement.dataset.theme = v;
+    if (d.k === "theme") { document.documentElement.dataset.theme = v; drawDial(); }
     if (d.k === "scale") eng.scale = v === "mini" ? 1080 / 1125 : 1;
     if (d.k === "sound" && v === "1") audio();
   } else {
     P[d.k] = v;
-    if (d.k === "type") { Object.assign(P, DSP.TYPES[v]); }
+    if (d.k === "type") Object.assign(P, DSP.TYPES[v]);
     if (d.k === "src") camera(v === "camera");
     if (d.k === "text") eng.seg.text = v;
     eng.set({});
   }
-  save();
-  if (d.k === "type" || d.k === "struct" || d.k === "color" || d.k === "light") PAGES[S.page].rows.forEach((_, i) => updRow(i));
-  else updRow(S.rows[S.page]);
-  info();
+  save(); renderList(); info();
+  return before;
+}
+function resetType() {
+  const keep = {}; ["name", "struct", "src", "pattern", "fit", "text", "font", "tscale", "tpos", "tscroll", "tout", "invert", "segN", "segK", "segH", "segT", "segSlant", "segGap", "segSpace", "icons", "colon"].forEach((k) => (keep[k] = P[k]));
+  eng.setPreset(Object.assign({}, DSP.DEFAULTS, DSP.TYPES[P.type], keep, { type: P.type }));
+  P = eng.preset; eng.seg.text = P.text; save(); renderList(); info();
+  flash("Ripristinato il preset " + fmt(ALL[0], P.type));
 }
 function nudge(dir, mult, wrapEnum) {
   const d = curRow(); if (!d || d.a || d.text) return false;
@@ -377,70 +391,95 @@ function nudge(dir, mult, wrapEnum) {
   setParam(d, nv); return true;
 }
 
-/* --- Rotella --- */
-const wheel = $("wheel"), wctx = wheel.getContext("2d");
-const W = { off: 0, acc: 0, v: 0, last: 0, lastT: 0, id: null, raf: 0 };
-const WSTEP = 9;   // px di rotella per uno scatto
-function drawWheel() {
-  const w = Math.round(wheel.clientWidth * DPR), h = Math.round(wheel.clientHeight * DPR);
-  if (wheel.width !== w || wheel.height !== h) { wheel.width = w; wheel.height = h; }
+/* --- Ghiera: si gira per regolare, le frecce sono sui quattro lati, il centro conferma --- */
+const dial = $("dial"), dctx = dial.getContext("2d");
+const D = { size: 180, rot: 0, acc: 0, id: null, mode: null, quad: null, moved: false, lastA: 0, lastT: 0, v: 0, hold: 0, rep: 0, reps: 0, longT: 0, pressed: null };
+const DETENT = Math.PI / 12;      // 24 scatti per giro
+function drawDial() {
+  const s = D.size, px = Math.round(s * DPR);
+  if (dial.width !== px) { dial.width = px; dial.height = px; dial.style.width = s + "px"; dial.style.height = s + "px"; }
   const cs = getComputedStyle(document.documentElement), ink = cs.getPropertyValue("--ink").trim(), sf = cs.getPropertyValue("--surface").trim();
-  wctx.fillStyle = sf; wctx.fillRect(0, 0, w, h);
-  const R = w / 2, sp = WSTEP * DPR * 0.9;
-  // ogni costa e un punto su un cilindro visto di lato
-  const phase = ((W.off * DPR) % sp + sp) % sp;
-  for (let a = -R - sp; a < R + sp; a += sp) {
-    const x = a + phase, t = x / R; if (Math.abs(t) >= 1) continue;
-    const X = R + Math.sin(t * Math.PI / 2) * R, k = Math.cos(t * Math.PI / 2);
-    wctx.globalAlpha = 0.15 + 0.85 * k; wctx.fillStyle = ink;
-    wctx.fillRect(Math.round(X - DPR * 0.75 * k), h * 0.18, Math.max(1, Math.round(1.6 * DPR * k)), h * 0.64);
+  const c = dctx, R = px / 2, r0 = R * 0.36, lw = Math.max(1, DPR);
+  c.clearRect(0, 0, px, px);
+  c.lineWidth = lw; c.strokeStyle = ink; c.fillStyle = sf;
+  c.beginPath(); c.arc(R, R, R - lw, 0, Math.PI * 2); c.fill(); c.stroke();
+  if (D.pressed !== null && D.pressed !== "c") {            // quarto premuto
+    const a0 = -Math.PI / 2 + D.pressed * Math.PI / 2 - Math.PI / 4;
+    c.beginPath(); c.arc(R, R, R - lw, a0, a0 + Math.PI / 2); c.arc(R, R, r0 + lw * 2, a0 + Math.PI / 2, a0, true); c.closePath(); c.fillStyle = ink; c.globalAlpha = 0.15; c.fill(); c.globalAlpha = 1;
   }
-  wctx.globalAlpha = 1; wctx.fillStyle = ink; wctx.fillRect(Math.round(R - DPR), 0, Math.round(2 * DPR), Math.round(h * 0.12)); wctx.fillRect(Math.round(R - DPR), Math.round(h * 0.88), Math.round(2 * DPR), h);
-}
-function feed(dx, speed) {
-  W.off += dx; W.acc += dx;
-  const d = curRow(), big = d && !d.o && !d.lib && (d.max - d.min) / d.st > 60;
-  const mult = big ? (speed > 1.4 ? 5 : speed > 0.7 ? 2 : 1) : 1;
-  while (Math.abs(W.acc) >= WSTEP) {
-    const dir = W.acc > 0 ? 1 : -1; W.acc -= dir * WSTEP;
-    if (nudge(dir, mult, false)) sound("detent"); else { sound("stop"); W.v = 0; W.acc = 0; break; }
+  // tacche che girano con la ghiera
+  for (let i = 0; i < 24; i++) {
+    const a = D.rot + i * DETENT, k = 0.45;
+    c.globalAlpha = 0.35; c.beginPath();
+    c.moveTo(R + Math.cos(a) * (R * 0.9), R + Math.sin(a) * (R * 0.9)); c.lineTo(R + Math.cos(a) * (R * 0.95), R + Math.sin(a) * (R * 0.95)); c.stroke();
   }
-  drawWheel();
+  c.globalAlpha = 1; c.fillStyle = ink;
+  c.font = `400 ${15 * DPR}px "Helvetica Neue", Helvetica, Arial, sans-serif`; c.textAlign = "center"; c.textBaseline = "middle";
+  const m = R * 0.66;
+  c.fillText("▲", R, R - m); c.fillText("▼", R, R + m); c.fillText("◀", R - m, R); c.fillText("▶", R + m, R);
+  c.beginPath(); c.arc(R, R, r0, 0, Math.PI * 2);
+  if (D.pressed === "c") { c.fillStyle = ink; c.fill(); c.fillStyle = sf; } else { c.fillStyle = sf; c.fill(); c.stroke(); c.fillStyle = ink; }
+  c.fillText("OK", R, R + DPR);
 }
-wheel.addEventListener("pointerdown", (e) => { wheel.setPointerCapture(e.pointerId); W.id = e.pointerId; W.last = e.clientX; W.lastT = performance.now(); W.v = 0; cancelAnimationFrame(W.raf); audio(); });
-wheel.addEventListener("pointermove", (e) => {
-  if (W.id !== e.pointerId) return;
-  const now = performance.now(), dx = e.clientX - W.last, dt = Math.max(1, now - W.lastT);
-  W.v = W.v * 0.6 + (dx / dt) * 0.4; W.last = e.clientX; W.lastT = now;
-  feed(dx, Math.abs(W.v));
+function dialPos(e) { const b = dial.getBoundingClientRect(); const x = e.clientX - b.left - b.width / 2, y = e.clientY - b.top - b.height / 2; return { x, y, r: Math.hypot(x, y) / (b.width / 2), a: Math.atan2(y, x) }; }
+const quadOf = (a) => { const d = (a + Math.PI / 2 + Math.PI / 4 + Math.PI * 4) % (Math.PI * 2); return Math.floor(d / (Math.PI / 2)); };   // 0 su, 1 destra, 2 giu, 3 sinistra
+function arrow(q, mult) {
+  if (q === 0) return moveSel(-1);
+  if (q === 2) return moveSel(1);
+  return nudge(q === 1 ? 1 : -1, mult || 1, false);
+}
+function arrowSound(q, ok) { sound(ok ? (q === 0 || q === 2 ? "menu" : "set") : "stop"); }
+dial.addEventListener("pointerdown", (e) => {
+  e.preventDefault(); dial.setPointerCapture(e.pointerId); audio();
+  const p = dialPos(e); D.id = e.pointerId; D.moved = false; D.reps = 0; D.acc = 0; D.v = 0; D.lastA = p.a; D.lastT = performance.now();
+  if (p.r < 0.36) {
+    D.mode = "c"; D.pressed = "c"; drawDial();
+    D.longT = setTimeout(() => { D.mode = "long"; resetParam(curRow()); }, 650);
+  } else {
+    D.mode = "ring"; D.quad = quadOf(p.a);
+    D.hold = setTimeout(() => {           // tenuto premuto su una freccia: ripete, accelerando
+      if (D.moved) return; D.pressed = D.quad; drawDial();
+      D.rep = setInterval(() => { D.reps++; const ok = arrow(D.quad, D.reps > 20 ? 5 : D.reps > 8 ? 2 : 1); sound(ok ? "repeat" : "stop"); }, 70);
+    }, 380);
+  }
 });
-function endWheel(e) {
-  if (W.id !== e.pointerId) return; W.id = null;
-  let v = W.v * 16; if (performance.now() - W.lastT > 80) v = 0;
-  const spin = () => { if (Math.abs(v) < 0.4) return; feed(v, Math.abs(v) / 16); v *= 0.93; W.raf = requestAnimationFrame(spin); };
-  spin();
+dial.addEventListener("pointermove", (e) => {
+  if (D.id !== e.pointerId || D.mode !== "ring") return;
+  const p = dialPos(e), now = performance.now();
+  let da = p.a - D.lastA; if (da > Math.PI) da -= Math.PI * 2; if (da < -Math.PI) da += Math.PI * 2;
+  D.lastA = p.a; const dt = Math.max(1, now - D.lastT); D.lastT = now;
+  D.v = D.v * 0.6 + (da / dt) * 0.4;
+  D.acc += da; D.rot += da;
+  if (!D.moved && Math.abs(D.acc) > 0.17) { D.moved = true; clearTimeout(D.hold); clearInterval(D.rep); D.pressed = null; }
+  if (D.moved) {
+    const d = curRow(), big = d && !d.o && !d.lib && d.max != null && (d.max - d.min) / d.st > 60, sp = Math.abs(D.v) * 1000;   // rad/s
+    const mult = big ? (sp > 9 ? 5 : sp > 5 ? 2 : 1) : 1;
+    while (Math.abs(D.acc) >= DETENT) {
+      const dir = D.acc > 0 ? 1 : -1; D.acc -= dir * DETENT;
+      if (nudge(dir, mult, false)) sound("detent"); else { sound("stop"); D.acc = 0; break; }
+    }
+  }
+  drawDial();
+});
+function dialUp(e) {
+  if (D.id !== e.pointerId) return;
+  D.id = null; clearTimeout(D.hold); clearInterval(D.rep); clearTimeout(D.longT);
+  if (D.mode === "c") press();
+  else if (D.mode === "ring" && !D.moved && D.reps === 0) { D.pressed = D.quad; drawDial(); const ok = arrow(D.quad); arrowSound(D.quad, ok); setTimeout(() => { D.pressed = null; drawDial(); }, 90); }
+  D.mode = null; if (D.pressed !== null && D.reps === 0 && D.pressed !== D.quad) D.pressed = null;
+  if (D.reps) D.pressed = null;
+  if (D.pressed === "c") D.pressed = null;
+  drawDial();
 }
-wheel.addEventListener("pointerup", endWheel); wheel.addEventListener("pointercancel", endWheel);
+dial.addEventListener("pointerup", dialUp); dial.addEventListener("pointercancel", dialUp);
+document.addEventListener("keydown", (e) => {   // tastiera sul Mac: frecce e invio
+  if (document.activeElement && document.activeElement.tagName === "INPUT") return;
+  const map = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 };
+  if (e.key in map) { e.preventDefault(); const q = map[e.key]; arrowSound(q, arrow(q)); }
+  else if (e.key === "Enter") press();
+});
 
-/* --- Tasti con ripetizione --- */
-function holdKey(el, fn, snd) {
-  let t1 = 0, t2 = 0, n = 0;
-  const stop = () => { clearTimeout(t1); clearInterval(t2); el.classList.remove("down"); };
-  el.addEventListener("pointerdown", (e) => {
-    e.preventDefault(); audio(); el.classList.add("down"); n = 0;
-    fn(1); sound(snd);
-    t1 = setTimeout(() => { t2 = setInterval(() => { n++; fn(n > 20 ? 5 : n > 8 ? 2 : 1); sound("repeat"); }, 70); }, 380);
-  });
-  ["pointerup", "pointercancel", "pointerleave"].forEach((t) => el.addEventListener(t, stop));
-}
-holdKey($("kL"), (m) => nudge(-1, m, false), "set");
-holdKey($("kR"), (m) => nudge(1, m, false), "set");
-holdKey($("kUp"), () => moveSel(-1), "menu");
-holdKey($("kDn"), () => moveSel(1), "menu");
-
-/* --- Pagine --- */
-PAGES.forEach((p, i) => { const b = document.createElement("button"); b.textContent = p.t; b.addEventListener("click", () => { S.page = i; buildRows(); sound("menu"); save(); }); $("tabs").appendChild(b); });
-$("theme").addEventListener("click", () => { const d = PAGES[7].rows.find((r) => r.k === "theme"); setParam(d, S.theme === "dark" ? "light" : "dark"); sound("set"); drawWheel(); });
+$("theme").addEventListener("click", () => { setParam(ALL.find((r) => r.k === "theme"), S.theme === "dark" ? "light" : "dark"); sound("set"); });
 document.documentElement.dataset.theme = S.theme;
 
 /* --- Vista: dimensione reale, lente, panoramica --- */
@@ -449,20 +488,22 @@ function layout() {
   let H = window.innerHeight;
   if (navigator.standalone && screen.height) H = Math.max(screen.width, screen.height);
   const app = $("app"), cs = getComputedStyle(app), top = parseFloat(cs.paddingTop) || 0, bottom = parseFloat(cs.paddingBottom) || 0;
-  const fixed = 32 + 104 + 28 + 76 + top + bottom, vh = Math.max(160, Math.min(380, Math.floor(H - fixed - 6 * 30)));
+  const avail = H - top - bottom - 30 - 92 - 28 * 7 - 16;           // resta per vista e ghiera
+  D.size = Math.max(130, Math.min(190, Math.floor(avail * 0.44)));
+  const vh = Math.max(120, Math.floor(avail - D.size - 4));
   view.style.height = vh + "px";
   app.style.height = H + "px";
-  lens.width = Math.round(88 * DPR); lens.height = Math.round(88 * DPR);
+  lens.width = Math.round(76 * DPR); lens.height = Math.round(76 * DPR);
   if (!S.lens) S.lens = [view.clientWidth / 2, vh / 2];
   S.lens[0] = Math.min(S.lens[0], view.clientWidth); S.lens[1] = Math.min(S.lens[1], vh);
-  drawWheel();
+  drawDial();
 }
 window.addEventListener("resize", () => setTimeout(layout, 60));
 const ptrs = new Map(); let lastDown = 0;
 view.addEventListener("pointerdown", (e) => {
   view.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
   const now = performance.now();
-  if (ptrs.size === 1 && now - lastDown < 300) { eng.pan = [0, 0]; flash("CENTRATO"); }
+  if (ptrs.size === 1 && now - lastDown < 300) { eng.pan = [0, 0]; flash("Display centrato"); }
   lastDown = now;
   if (ptrs.size === 1) setLens(e);
 });
@@ -492,11 +533,11 @@ function info() {
   const ps = eng.panelSize(), mm = (v) => (v * 25.4 / PPI).toFixed(1).replace(".", ",");
   const phys = S.scale === "mini";
   const diag = Math.hypot(ps[0], ps[1]) / PPI;
-  const l1 = P.struct === "seg" ? `${P.segN} CIFRE · ${P.segK} SEGMENTI` : `${P.nx}×${P.ny} PUNTI · PASSO ${P.pitch} PX`;
-  const l2 = phys ? `${mm(ps[0])}×${mm(ps[1])} MM · ${diag.toFixed(2).replace(".", ",")}"` : `${ps[0]}×${ps[1]} PX`;
-  const l3 = `LENTE ×${S.zoom} · ${Math.round(fps)} FPS`;
-  $("info").innerHTML = `<div>${l1}</div><div>${l2}</div><div>${l3}</div><div class="msg">${msg || (ps[0] / eng.scale > view.clientWidth * DPR ? "PIU GRANDE DELLA VISTA: 2 DITA PER SPOSTARE" : "")}</div>`;
-  $("pname").textContent = P.name || "";
+  const l1 = P.struct === "seg" ? `${P.segN} cifre a ${P.segK} segmenti` : `${P.nx}×${P.ny} punti, passo ${P.pitch} px`;
+  const l2 = phys ? `${mm(ps[0])}×${mm(ps[1])} mm, ${diag.toFixed(2).replace(".", ",")}″` : `${ps[0]}×${ps[1]} px`;
+  const l3 = `Lente ×${S.zoom}, ${Math.round(fps)} fps`;
+  $("info").innerHTML = `<div>${l1}</div><div>${l2}</div><div>${l3}</div><div class="msg">${msg || (ps[0] / eng.scale > view.clientWidth * DPR ? "Più grande della vista: sposta con 2 dita" : "")}</div>`;
+  $("pname").textContent = (P.name || "") + " · " + fmt(ALL[0], P.type);
 }
 
 /* --- Contenuto --- */
@@ -506,7 +547,7 @@ async function camera(on) {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
       video = document.createElement("video"); video.playsInline = true; video.muted = true; video.setAttribute("playsinline", ""); video.srcObject = stream; await video.play();
-    } catch (e) { stream = null; video = null; flash("CAMERA NON DISPONIBILE"); }
+    } catch (e) { stream = null; video = null; flash("Camera non disponibile"); }
   } else if (!on && stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; video = null; }
 }
 function loadImage(file) {
@@ -517,8 +558,8 @@ function loadImage(file) {
     const x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(im, 0, 0, c.width, c.height);
     img = c; URL.revokeObjectURL(url);
     try { const k2 = Math.min(1, 640 / Math.max(c.width, c.height)), s = document.createElement("canvas"); s.width = Math.round(c.width * k2); s.height = Math.round(c.height * k2); s.getContext("2d").drawImage(c, 0, 0, s.width, s.height); store.set("dsp1-img", s.toDataURL("image/jpeg", 0.85)); } catch (e) {}
-    const d = PAGES[5].rows[0]; if (P.src !== "image") { if (S.page === 5) setParam(d, "image"); else { P.src = "image"; camera(false); } }
-    flash("IMMAGINE CARICATA");
+    if (P.src !== "image") setParam(ALL.find((r) => r.k === "src"), "image");
+    flash("Immagine caricata");
   };
   im.src = url;
 }
@@ -609,28 +650,30 @@ function action(a) {
   sound("act");
   if (a !== "del") confirmDel = false;
   if (a === "image") { $("file").click(); return; }
+  if (a === "reset") { resetType(); return; }
   if (a === "save") {
-    const n = (P.name || "").trim() || "SENZA NOME"; P.name = n; lib[n] = cleanPreset(); S.libSel = n;
-    store.set("dsp1-lib", JSON.stringify(lib)); save(); buildRows(); flash("SALVATO: " + n); return;
+    const n = (P.name || "").trim() || "Senza nome"; P.name = n; lib[n] = cleanPreset(); S.libSel = n;
+    store.set("dsp1-lib", JSON.stringify(lib)); save(); renderList(); flash("Salvato: " + n); return;
   }
-  if (a === "load") { const p = lib[S.libSel]; if (!p) { flash("CATALOGO VUOTO"); return; } eng.setPreset(p); P = eng.preset; eng.seg.text = P.text; camera(P.src === "camera"); save(); buildRows(); flash("CARICATO: " + S.libSel); return; }
+  if (a === "load") { const p = lib[S.libSel]; if (!p) { flash("Catalogo vuoto"); return; } eng.setPreset(p); P = eng.preset; eng.seg.text = P.text; camera(P.src === "camera"); save(); renderList(); flash("Caricato: " + S.libSel); return; }
   if (a === "del") {
-    if (!lib[S.libSel]) { flash("CATALOGO VUOTO"); return; }
-    if (!confirmDel) { confirmDel = true; updRow(S.rows[S.page]); setTimeout(() => { confirmDel = false; if (S.page === 7) buildRows(); }, 3000); return; }
-    delete lib[S.libSel]; store.set("dsp1-lib", JSON.stringify(lib)); flash("ELIMINATO: " + S.libSel); S.libSel = Object.keys(lib)[0] || ""; confirmDel = false; save(); buildRows(); return;
+    if (!lib[S.libSel]) { flash("Catalogo vuoto"); return; }
+    if (!confirmDel) { confirmDel = true; renderList(); setTimeout(() => { confirmDel = false; renderList(); }, 3000); return; }
+    delete lib[S.libSel]; store.set("dsp1-lib", JSON.stringify(lib)); flash("Eliminato: " + S.libSel); S.libSel = Object.keys(lib)[0] || ""; confirmDel = false; save(); renderList(); return;
   }
   if (a === "expJson") { share([jsonFile()]); return; }
   if (a === "expMod") {
-    if (!moduleSrc) { flash("MODULO NON ANCORA CARICATO"); return; }
+    if (!moduleSrc) { flash("Modulo non ancora caricato"); return; }
     share([new File([moduleSrc], "display.js", { type: "text/javascript" }), jsonFile(), new File([example()], "esempio.html", { type: "text/html" })]); return;
   }
   if (a === "imp") { $("imp").click(); return; }
-  if (a === "shot") { const c = eng.snapshot(); share([dataUrlFile(c.toDataURL("image/png"), slug(P.name) + ".png")]); flash("SCREENSHOT " + c.width + "×" + c.height); }
+  if (a === "shot") { const c = eng.snapshot(); share([dataUrlFile(c.toDataURL("image/png"), slug(P.name) + ".png")]); flash("Screenshot " + c.width + "×" + c.height); }
 }
 $("imp").addEventListener("change", (e) => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-  f.text().then((s) => { const p = JSON.parse(s); eng.setPreset(p); P = eng.preset; eng.seg.text = P.text; camera(P.src === "camera"); save(); buildRows(); flash("IMPORTATO: " + (P.name || "")); }).catch(() => flash("FILE NON VALIDO"));
+  f.text().then((s) => { const p = JSON.parse(s); eng.setPreset(p); P = eng.preset; eng.seg.text = P.text; camera(P.src === "camera"); save(); renderList(); flash("Importato: " + (P.name || "")); }).catch(() => flash("File non valido"));
 });
+
 
 /* --- Ciclo --- */
 let lastT = performance.now(), infoT = 0;
@@ -643,7 +686,7 @@ function frame(t) {
   if (t - infoT > 1000) { infoT = t; info(); }
 }
 layout();
-buildRows();
+renderList();
 info();
 if (P.src === "camera") camera(true);
 requestAnimationFrame(frame);

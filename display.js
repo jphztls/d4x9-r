@@ -10,13 +10,14 @@
 "use strict";
 
 const DEFAULTS = {
-  v: 1, name: "SENZA NOME",
+  v: 1, name: "Senza nome",
   type: "lcd", struct: "matrix", light: "trans", color: "rgb",
   nx: 160, ny: 120, pitch: 6, layout: "stripe", fillX: 80, fillY: 88, round: 10, bits: 6, dither: 0,
   tintH: 0, tintS: 0, tintL: 100, bgH: 0, bgS: 0, bgL: 3,
   bright: 100, contrast: 100, black: 6, gamma: 100, sat: 100, unlit: 0,
   scan: 0, bloom: 8, back: 20, curve: 0, persist: 20, flick: 0, noise: 4, view: 0, shadow: 0, mesh: 0, edge: 30,
   glare: 12, glareA: -30, glareW: 30, ghost: 0, ghostD: 6, ghostA: 135, frameW: 24, frameL: 6,
+  frost: 0, frostR: 6, gTintH: 200, gTintS: 15, gTintA: 0, haze: 0,
   segN: 6, segK: 7, segH: 160, segT: 14, segSlant: 8, segGap: 20, segSpace: 22, icons: "some", colon: "blink",
   src: "pattern", pattern: "bars", fit: "cover", text: "DSP-1 PRONTO", font: "5x7", tscale: 1, tpos: "bottom", tscroll: 0, tout: 1, invert: 0,
 };
@@ -104,7 +105,7 @@ uniform vec3 uTint, uBg, uFrame;
 uniform float uBright, uBlack, uUnlit, uScan, uBloom, uBack, uCurve, uFlick, uNoise, uView, uShadow, uMesh, uEdge;
 uniform float uGlare, uGlareA, uGlareW, uGhost, uT;
 out vec4 o;
-const vec3 PR = vec3(1.0, 0.13, 0.08), PG = vec3(0.12, 1.0, 0.18), PB = vec3(0.12, 0.2, 1.0);
+const vec3 PR = vec3(1.0, 0.11, 0.07), PG = vec3(0.09, 1.0, 0.13), PB = vec3(0.11, 0.17, 1.0);
 const vec3 LW = vec3(0.2126, 0.7152, 0.0722);
 
 float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -238,12 +239,40 @@ void main() {
       if (uLight > 1.5) col = mix(col, g, uGhost * 0.3); else col += max(g - uBg, 0.0) * uGhost * 0.45;
     }
   } else col = uFrame;
-  vec2 g = (dp + uBez) / (pd + 2.0 * uBez) - 0.5;
+  o = vec4(clamp(col, 0.0, 1.0), 1.0);
+}`;
+
+/* Passo 3: vetro davanti al pannello (satinatura, tinta, velatura, glare) */
+const FS_GLASS = `#version 300 es
+precision highp float;
+uniform sampler2D uS;
+uniform vec2 uRes, uOrig, uPanelD;
+uniform float uBez, uFrost, uFrostR, uTintA, uHaze, uGlare, uGlareA, uGlareW;
+uniform vec3 uGT;
+out vec4 o;
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+void main() {
+  vec2 uv = gl_FragCoord.xy / uRes;
+  vec2 p = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y), dp = p - uOrig;
+  if (dp.x < -uBez || dp.y < -uBez || dp.x > uPanelD.x + uBez || dp.y > uPanelD.y + uBez) { o = vec4(0.0); return; }
+  vec3 c = texture(uS, uv).rgb;
+  if (uFrost > 0.0) {                                    // vetro satinato: ogni pixel raccoglie luce da punti vicini a caso
+    float a = hash(gl_FragCoord.xy) * 6.2832, r0 = 0.35 + 0.65 * hash(gl_FragCoord.yx + 17.0);
+    vec3 acc = vec3(0.0);
+    for (int i = 0; i < 12; i++) {
+      float fi = float(i), r = uFrostR * sqrt((fi + 0.5) / 12.0) * r0, an = fi * 2.39996 + a;
+      acc += texture(uS, uv + vec2(cos(an), -sin(an)) * r / uRes).rgb;
+    }
+    c = mix(c, acc / 12.0, uFrost);
+    c *= 1.0 + (hash(gl_FragCoord.xy * 0.73) - 0.5) * uFrost * 0.08;
+  }
+  c = mix(c, c * uGT * 1.4, uTintA) + uGT * uHaze * 0.22;
+  vec2 g = (dp + uBez) / (uPanelD + 2.0 * uBez) - 0.5;
   float an = radians(uGlareA);
   float t = dot(g, vec2(cos(an), sin(an)));
-  float band = exp(-pow((t + 0.18) / max(uGlareW, 0.02), 2.0));
-  col += uGlare * (0.32 * band + 0.05 * (0.5 - g.y));
-  o = vec4(clamp(col, 0.0, 1.0), 1.0);
+  float band = exp(-pow((t + 0.18) / max(uGlareW * (1.0 + uFrost * 2.0), 0.02), 2.0));
+  c += uGlare * (0.32 * band / (1.0 + uFrost * 1.5) + 0.05 * (0.5 - g.y));
+  o = vec4(clamp(c, 0.0, 1.0), 1.0);
 }`;
 
 function hsl(h, s, l) {
@@ -365,7 +394,8 @@ function create(canvas, preset, opts) {
     for (let i = 0; i < n; i++) { const a = gl.getActiveUniform(p, i); u[a.name.replace(/\[0\]$/, "")] = gl.getUniformLocation(p, a.name); }
     return { p, u };
   }
-  const progC = program(FS_CONTENT), progP = program(FS_PANEL);
+  const progC = program(FS_CONTENT), progP = program(FS_PANEL), progG = program(FS_GLASS);
+  const scrTex = texture(false), scrFb = gl.createFramebuffer(); let scrW = 0, scrH = 0;
   function texture(mip) {
     const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mip ? gl.LINEAR_MIPMAP_LINEAR : gl.NEAREST);
@@ -452,7 +482,14 @@ function create(canvas, preset, opts) {
       }
       gl.useProgram(progP.p); const u = progP.u;
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, cTex); gl.uniform1i(u.uC, 0);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H);
+      if (scrW !== W || scrH !== H) {
+        scrW = W; scrH = H; gl.bindTexture(gl.TEXTURE_2D, scrTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, scrFb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, scrTex, 0);
+      }
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, cTex);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, scrFb); gl.viewport(0, 0, W, H);
       gl.uniform2f(u.uRes, W, H); gl.uniform2f(u.uOrig, api.origin[0], api.origin[1]); gl.uniform2f(u.uGrid, P.nx, P.ny); gl.uniform2f(u.uPanel, ps[0], ps[1]);
       gl.uniform2f(u.uFill, P.fillX / 100, P.fillY / 100);
       const ga = P.ghostA * Math.PI / 180; gl.uniform2f(u.uGhostOff, Math.cos(ga) * P.ghostD * sc, Math.sin(ga) * P.ghostD * sc);
@@ -464,6 +501,14 @@ function create(canvas, preset, opts) {
       for (const k in f1) if (u[k]) gl.uniform1f(u[k], f1[k]);
       gl.uniform3fv(u.uTint, hsl(P.tintH, P.tintS, P.tintL)); gl.uniform3fv(u.uBg, hsl(P.bgH, P.bgS, P.bgL));
       const fl = P.frameL / 100; gl.uniform3f(u.uFrame, fl, fl, fl);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      const g = progG.u; gl.useProgram(progG.p);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, scrTex); gl.uniform1i(g.uS, 0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H);
+      gl.uniform2f(g.uRes, W, H); gl.uniform2f(g.uOrig, api.origin[0], api.origin[1]); gl.uniform2f(g.uPanelD, ps[0] / sc, ps[1] / sc);
+      const f2 = { uBez: bez, uFrost: P.frost / 100, uFrostR: P.frostR, uTintA: P.gTintA / 100, uHaze: P.haze / 100, uGlare: P.glare / 100, uGlareA: P.glareA, uGlareW: P.glareW / 200 };
+      for (const k in f2) if (g[k]) gl.uniform1f(g[k], f2[k]);
+      gl.uniform3fv(g.uGT, hsl(P.gTintH, P.gTintS, 50));
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },
     /* copia del display (con cornice) a risoluzione nativa */
